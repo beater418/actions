@@ -1,0 +1,68 @@
+name: Hello World Github Actions
+
+on:
+  workflow_dispatch:
+    inputs:
+      saludo:
+        description: 'El saludo que se mostrará'
+        required: false
+        type: string
+        default: 'Hola mundo'
+
+# Variable a nivel de todo el workflow
+env:
+  APP_NAME: app-node
+  NOMBRE: Usuario
+
+jobs:
+  demo-envs:
+    runs-on: ubuntu-latest
+
+    # env a nivel del job:
+    env:
+      STAGE: dev
+      NOMBRE: root
+
+    steps:
+      - name: Mostrar envs
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ github.event.inputs.saludo }}"
+    
+      - name: Sobreescribir a nivel de step
+        env:
+          NOMBRE: admin
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ inputs.saludo }}"
+      
+      - name: Utilizar el input como variable de entorno
+        env:
+          SALUDO: ${{ inputs.saludo }}
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ env.SALUDO }}"
+  
+  
+  demo-vars-secrets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mostrar configuracion de variable (data no sensible)
+        run: |
+          echo "TARGET : ${{ vars.TARGET_ENV }}"
+
+      - name: Mostrar secret (data sensible) / no muestra el valor real
+        run: |
+          echo "API_TOKEN : ${{ secrets.API_TOKEN }}"
+
+      - name: Mostrar secret (data sensible)
+        run: |
+          echo "API_TOKEN : ${{ secrets.API_TOKEN }}"
+          echo "API_TOKEN=${#secrets.API_TOKEN}"
