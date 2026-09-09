@@ -1,0 +1,80 @@
+name: Runners y matrix
+
+on:
+  workflow_dispatch:
+
+jobs:
+  runner-sample:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Identificar el runner
+        run: |
+          echo "OS: $RUNNER_OS"
+          echo "Host: $HOSTNAME"
+          echo "Arch: $(uname -m)"
+          echo "Nombre del runner: $RUNNER_NAME"
+          echo "Versión del runner: $RUNNER_VERSION"
+          echo "Directorio de trabajo: $RUNNER_WORKSPACE"
+  
+  test-node:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+
+    steps:
+      - name: Checkout de codigo
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+        
+      - name: Check node version
+        run: node -v
+
+      - name: check npm version
+        run: npm -v
+  
+  multi-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20]
+
+        include:
+          - os: ubuntu-latest
+            node: 22
+            label: 'ubuntu-node22'
+          - os: macos-latest
+            node: 22
+            label: 'macos-node22'
+        
+        exclude:
+          - os: windows-latest
+            node: 20
+    steps:
+      - name: Info del runner
+        env:
+          LABEL: ${{ matrix.label }}
+        
+        run: |
+          echo "Label: $LABEL"
+          echo "OS: $RUNNER_OS"
+          echo "Host: $HOSTNAME"
+          echo "Arch: $(uname -m)"
+          echo "Nombre del runner: $RUNNER_NAME"
+          echo "Directorio de trabajo: $RUNNER_WORKSPACE"
+          echo "Node version: $(node -v)"
+      
+      - name: Trabjar con MacOs y node
+        if: ${{ matrix.os == 'macos-latest' && matrix.node == 22 }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
