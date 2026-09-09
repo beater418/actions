@@ -1,0 +1,18 @@
+name: workflow reutilizable
+
+on:
+  workflow_call:
+
+jobs:
+  builder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Builder message
+        run: echo "Simulando escenario de build"
+
+      - name: Final message
+        run: echo "Build simulation complete"

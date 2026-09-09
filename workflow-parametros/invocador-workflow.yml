@@ -1,0 +1,10 @@
+name: Invocador Workflow
+on:
+  push:
+    branches:
+      - master
+
+
+jobs:
+  example-builder:
+    uses: ./.github/workflows/reusable-workflow.yml
