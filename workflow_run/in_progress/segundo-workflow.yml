@@ -1,0 +1,15 @@
+name: Segundo Workflow
+
+on:
+  workflow_run:
+    workflows: ["Basico Workflow"]
+    types:
+      - in_progress
+
+jobs:
+  hola:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Say segundo workflow
+        run: echo "Hola mundo desde el segundo workflow, gatillado por

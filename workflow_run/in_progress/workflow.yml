@@ -1,0 +1,24 @@
+name: Basico Workflow
+
+on:
+  push:
+
+jobs:
+  hola:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Say hello
+        run: echo "Hola mundo desde Actions"
+
+      - name: Simulando segundo paso
+        run: echo "Segundo paso en actions"
+
+      - name: Simulando tercer paso
+        run: echo "Tercer paso en actions"
+
+      - name: Simulando cuarto paso
+        run: echo "Cuarto paso en actions"
+
+      - name: Simulando quinto paso
+        run: echo "Quinto paso en actions"
