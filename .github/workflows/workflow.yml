@@ -1,63 +1,68 @@
-name: Caso 01 Triggers
+name: caso env vars
 
 on:
-
-  # escenarion en el cual queremos publicar el workflow en la rama "master", pero ignorando los siguientes Paths (archivos y carpetas)
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - README.md
-      - docs/**
-      - '**.md'
-
-  # caso2: Cualquier Pull Request hacia la rama "master"
-  pull_request:
-    branches:
-      - master
-    types: # Tipos de eventos de Pull Request que dispararán el workflow
-      - opened
-      - synchronize
-      - reopened
-
-  # caso3: Cualquier evento que dispare el workflow
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'El entorno en el cual se ejecutará el workflow'
-        required: true
-        type: choice # Tipo de entrada (seleecionable)
-        default: 'dev'
-        options:
-          - dev
-          - staging
-          - prod
-  # caso4: Cron schedule (utilizar la expresion Cron, recordar que usa la zona horaria UTC)
-  schedule:
-    - cron: '*/15 * * * *' # Ejecutar cada 15 minutos
+      saludo:
+        description: 'El saludo que se mostrará'
+        required: false
+        type: string
+        default: 'Hola mundo'
+
+# Variable a nivel de todo el workflow
+env:
+  APP_NAME: app-node
+  NOMBRE: Usuario
 
 jobs:
-  show-events:
+  demo-envs:
+    runs-on: ubuntu-latest
+
+    # env a nivel del job:
+    env:
+      STAGE: dev
+      NOMBRE: root
+
+    steps:
+      - name: Mostrar envs
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ github.event.inputs.saludo }}"
+    
+      - name: Sobreescribir a nivel de step
+        env:
+          NOMBRE: admin
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ inputs.saludo }}"
+      
+      - name: Utilizar el input como variable de entorno
+        env:
+          SALUDO: ${{ inputs.saludo }}
+        run: |
+          echo "APP_NAME: ${{ env.APP_NAME }}"
+          echo "STAGE: ${{ env.STAGE }}"
+          echo "NOMBRE: ${{ env.NOMBRE }}"
+          echo "Saludo: ${{ env.SALUDO }}"
+  
+  
+  demo-vars-secrets:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Identificar Evento
+      - name: Mostrar configuracion de variable (data no sensible)
         run: |
-          echo "Evento que disparó el workflow: ${{ github.event_name }}"
-          echo "Ref:: ${{ github.ref }}"
-          echo "SHA:: ${{ github.sha }}"
-          echo "Actor:: ${{ github.actor }}"
-      
-      - name: Inputs del workflow
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+          echo "TARGET : ${{ vars.TARGET_ENV }}"
+
+      - name: Mostrar secret (data sensible) / no muestra el valor real
         run: |
-          echo "Environment: ${{ github.event.inputs.environment }}"
-          echo "Environment_inputs: ${{ inputs.environment }}"
-      
-      - name: Datos sobre el evento de pull_request
-        if: ${{ github.event_name == 'pull_request' }}
+          echo "API_TOKEN : ${{ secrets.API_TOKEN }}"
+
+      - name: Mostrar secret (data sensible)
         run: |
-          echo "Pull Request ID: ${{ github.event.pull_request.id }}"
-          echo "Pull Request Title: ${{ github.event.pull_request.title }}"
-          echo "Pull Request Body: ${{ github.event.pull_request.body }}"
-          echo "Pull Request User: ${{ github.event.pull_request.user.login }}"
+          echo "API_TOKEN : ${{ secrets.API_TOKEN }}"
+          echo "API_TOKEN=${#secrets.API_TOKEN}"
